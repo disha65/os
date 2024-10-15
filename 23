@@ -1,0 +1,169 @@
+#include<stdio.h>
+#include<sys/types.h>
+#include<unistd.h>
+int main()
+{
+	if(fork()==0)
+	{
+		sleep(5);
+        printf("\nChild process id %d",getpid());
+		printf("\nParent process terminated");
+		printf("\nNow I am a orphan Process");
+	}
+	else
+		printf("\nI am Parent Process %d",getpid());
+	return 0;
+}
+q2]#include<stdio.h>
+int main()
+{
+int no_of_frames, no_of_pages, frames[10], pages[30], temp[10], flag1,
+flag2, flag3, i, j, k, pos, max, faults = 0;
+printf("Enter number of frames: ");
+scanf("%d", &no_of_frames);
+printf("Enter number of pages: ");
+scanf("%d", &no_of_pages);
+printf("Enter page reference string: ");
+   for(i = 0; i < no_of_pages; ++i){
+scanf("%d", &pages[i]);
+}
+for(i = 0; i < no_of_frames; ++i){
+frames[i] = -1;
+}
+for(i = 0; i < no_of_pages; ++i){
+flag1 = flag2 = 0;
+for(j = 0; j < no_of_frames; ++j){
+if(frames[j] == pages[i]){
+flag1 = flag2 = 1;
+break;
+}
+}
+if(flag1 == 0){
+for(j = 0; j < no_of_frames; ++j){
+if(frames[j] == -1){
+faults++;
+frames[j] = pages[i];
+flag2 = 1;
+break;
+}
+}
+}
+if(flag2 == 0){
+flag3 =0;
+for(j = 0; j < no_of_frames; ++j){
+temp[j] = -1;
+for(k = i + 1; k < no_of_pages; ++k){
+if(frames[j] == pages[k]){
+temp[j] = k;
+break;
+}
+}
+}
+for(j = 0; j < no_of_frames; ++j){
+if(temp[j] == -1){
+pos = j;
+flag3 = 1;
+    break;
+}
+}
+if(flag3 ==0){
+max = temp[0];
+pos = 0;
+for(j = 1; j < no_of_frames; ++j){
+if(temp[j] > max){
+max = temp[j];
+pos = j;
+}
+}
+}
+frames[pos] = pages[i];
+faults++;
+}
+printf("\n");
+for(j = 0; j < no_of_frames; ++j){
+printf("%d\t", frames[j]);
+}
+}
+printf("\n\nTotal Page Faults = %d", faults);
+return 0;
+}
+
+
+Slip 6_1: Write the simulation program for demand paging and show the page scheduling
+and total number of page faults according the MRU page replacement algorithm. Assume
+the memory of n frames.
+Reference String : 8, 5, 7, 8, 5, 7, 2, 3, 7, 3, 5, 9, 4, 6, 2
+#include<stdio.h>
+int frame[5][2],nf;
+int searchFrames(int sv)
+{
+int x;
+for(x=0;x<nf;x++)
+{
+if(sv==frame[x][0])
+    {
+return x;
+}
+}
+return -2;
+}
+void displayMemory()
+{
+int i;
+printf("\n\nFrame Contains |");
+for(i=0;i<nf;i++)
+printf(" %d | ",frame[i][0]);
+}
+int findFreeFrame()
+{
+int i,max=frame[0][1],ri=0;
+for(i=0;i<nf;i++)
+{
+if(frame[i][1]==-1)
+{
+return i;
+}
+}
+for(i=0;i<nf;i++)
+{
+if(max<frame[i][1])
+{
+max=frame[i][1];
+ri=i;
+}
+}
+return ri;
+}
+main()
+{
+int rs[]={12,15,12,18,6,8,11,12,19,12,6,8,12,15,19,8};
+int ts=0;
+int n=16,i,j,pf=0,srch,insert_index;
+printf("Enter how many frames");
+scanf("%d",&nf);
+for(i=0;i<nf;i++)
+{
+for(j=0;j<2;j++)
+frame[i][j]=-1;
+}
+displayMemory();
+for(i=0;i<n;i++)
+    {
+srch=searchFrames(rs[i]);
+if(srch==-2)
+{
+pf++;
+insert_index=findFreeFrame();
+frame[insert_index][0]=rs[i];
+frame[insert_index][1]=ts++;
+}
+else
+{
+frame[srch][1]=ts++;
+}
+displayMemory();
+}
+printf("\n\nTotal Page Faults Occured is %d\n",pf);
+}
+
+
