@@ -1,0 +1,156 @@
+#include<stdio.h>
+#include<sys/types.h>
+#define MAX 20
+
+void readarray(int a[],int n)
+{
+	int i;
+	printf("\nEnter data for array:");
+	for(i=0;i<n;i++)
+		scanf("%d",&a[i]);
+}
+
+void printarray(int a[],int n)
+{
+	int i;
+	for(i=0;i<n;i++)
+		printf("%d\t",a[i]);
+}
+
+void bubblesort(int a[],int n)
+{
+    int i,j,t;
+    for(i=1;i<n;i++)
+    {
+        for(j=0;j<n-i;j++)
+        {
+             if(a[j]>a[j+1]) 
+             {
+                t=a[j];
+                a[j]=a[j+1];
+                a[j+1]=t;
+              }
+        }      
+	}
+}
+
+void insertionsort(int a[],int n)
+{
+	int i,j,t;
+	for(i=1;i<n;i++)
+	{
+		t = a[i];
+		
+		for(j=i-1;j>=0;j--)
+		{
+			if(a[j]>t)
+				a[j+1] = a[j];
+		    else
+		        break;
+		}
+		a[j+1] = t;
+	}
+}
+
+int main()
+{
+	int a[MAX],n;
+	int i;
+	
+	printf("\nEnter how many numbers you want:");
+	scanf("%d",&n);
+
+	printf("\nEnter data for your array");
+	readarray(a,n);
+	
+	printf("\nYour array before sort\n");
+	printarray(a,n);
+	
+	if(fork()==0)
+	{
+		printf("\nI am child Process\n");
+		insertionsort(a,n);
+		printf("\nArray sorted by Child Process");
+		printarray(a,n);
+	}
+	else
+	{
+		printf("\nI am Parent Process\n");
+		bubblesort(a,n);
+		printf("\nArray sorted by Parent Process");
+		printarray(a,n);
+	}
+	return 0;
+}
+
+q2]#include <sys/types.h>
+#include<unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+void make_toks(char *s, char *tok[])
+{
+int i=0;
+char *p;
+p = strtok(s," ");
+while(p!=NULL)
+{ tok[i++]=p;
+p=strtok(NULL," ");
+}
+tok[i]=NULL;
+}
+void count(char *fn, char op)
+{ int fh,cc=0,wc=0,lc=0;
+char c;
+fh = open(fn,O_RDONLY);
+if(fh==-1) {
+printf("File %s not found.\n",fn);
+return;
+}
+while(read(fh,&c,1)>0)
+{ if(c==' ')
+wc++;
+else if(c=='\n')
+{
+wc++;
+lc++;
+} cc++;
+} close(fh);
+switch(op)
+{
+case 'c':
+printf("No.of characters:%d\n",cc-1);
+break;
+case 'w':
+printf("No.of words:%d\n",wc);
+break;
+case 'l':
+printf("No.of lines:%d\n",lc+1);
+     break;
+}
+} int main()
+{
+char buff[80],*args[10];
+int pid;
+while(1) { printf("myshell$ ");
+fflush(stdin);
+fgets(buff,80,stdin);
+buff[strlen(buff)-1]='\0';
+make_toks(buff,args);
+if(strcmp(args[0],"count")==0)
+count(args[2],args[1][0]);
+else
+{ pid = fork();
+if(pid>0)
+wait();
+else
+{
+if(execvp(args[0],args)==-1)
+printf("Bad command.\n");
+}
+}
+}
+return 0;
+} 
