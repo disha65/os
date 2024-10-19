@@ -1,0 +1,135 @@
+#include <stdio.h>
+ #define MAX 100
+ int main() {
+ int n, frames[MAX], pages[MAX], page_faults = 0, index = 0;
+ int page_count;
+ printf("Enter the number of frames: ");
+ scanf("%d", &n);
+ printf("Enter the number of pages in the reference string: ");
+ scanf("%d", &page_count);
+ printf("Enter the reference string: ");
+ for (int i = 0; i < page_count; i++) {
+ scanf("%d", &pages[i]);
+ }
+ for (int i = 0; i < n; i++) {
+ frames[i] =-1;
+ }
+ for (int i = 0; i < page_count; i++) {
+ int page = pages[i];
+ int found = 0;
+ for (int j = 0; j < n; j++) {
+ if (frames[j] == page) {
+ found = 1;
+ break;
+ }
+ }
+ if (!found) {
+ frames[index] = page;
+ index = (index + 1) % n;
+ page_faults++;
+printf("Page %d loaded into frame. Current frames: ", page);
+ for (int j = 0; j < n; j++) {
+ if (frames[j] !=-1) {
+ printf("%d ", frames[j]);
+ } else {
+ printf("-");
+ }
+ }
+ printf("\n");
+ }
+ }
+ printf("Total page faults: %d\n", page_faults);
+ return 0;
+ }
+
+ 2]#include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
+ #include <sys/wait.h>
+ #define MAX 1024
+ void search_first(const char *filename, const char *pattern) {
+ FILE *file = fopen(filename, "r");
+ if (file == NULL) {
+ perror("Error opening file");
+ return;
+ }
+ char line[MAX];
+ int line_number = 1;
+ while (fgets(line, sizeof(line), file) != NULL) {
+ if (strstr(line, pattern) != NULL) {
+ printf("First occurrence of '%s' found at line %d: %s",
+ pattern, line_number, line);
+ fclose(file);
+ return;
+ }
+ line_number++;
+ }
+ printf("Pattern '%s' not found in the file.\n", pattern);
+ fclose(file);
+ }
+ void search_all(const char *filename, const char *pattern) {
+ FILE *file = fopen(filename, "r");
+if (file == NULL) {
+ perror("Error opening file");
+ return;
+ }
+ char line[MAX];
+ int line_number = 1;
+ int found = 0;
+ while (fgets(line, sizeof(line), file) != NULL) {
+ if (strstr(line, pattern) != NULL) {
+ printf("Occurrence of '%s' found at line %d: %s", pattern,
+ line_number, line);
+ found = 1;
+ }
+ line_number++;
+ }
+ if (!found) {
+ printf("Pattern '%s' not found in the file.\n", pattern);
+ }
+ fclose(file);
+ }
+ int main() {
+ char input[MAX];
+ char *args[MAX];
+ while (1) {
+ printf("myshell$ ");
+ fgets(input, MAX, stdin);
+ input[strcspn(input, "\n")] = 0;
+ int i = 0;
+ args[i] = strtok(input, " ");
+ while (args[i] != NULL) {
+ i++;
+ args[i] = strtok(NULL, " ");
+ }
+if (args[0] == NULL) {
+ continue;
+ }
+ if (strcmp(args[0], "exit") == 0) {
+ break;
+ } else if (strcmp(args[0], "search") == 0 && args[1] != NULL &&
+ args[2] != NULL) {
+ if (strcmp(args[1], "f") == 0) {
+ search_first(args[2], args[3]);
+ } else if (strcmp(args[1], "a") == 0) {
+ search_all(args[2], args[3]);
+ } else {
+ printf("Invalid search option. Use 'f' for first
+ occurrence or 'a' for all occurrences.\n");
+ }
+ } else {
+ pid_t pid = fork();
+ if (pid == 0) {
+ execvp(args[0], args);
+ perror("Error executing command");
+ exit(1);
+ } else {
+ wait(NULL);
+ }
+ }
+ }
+ return 0;
+ }
+
+
