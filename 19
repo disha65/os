@@ -1,0 +1,113 @@
+#include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
+ #include <sys/wait.h>
+ #include <dirent.h>
+ #define MAX_CMD_LEN 1024
+ #define MAX_ARGS 100
+ void list_files_in_directory(const char *dirname) {
+ struct dirent *de;
+DIR *dr = opendir(dirname);
+ if (dr == NULL) {
+ printf("Could not open current directory\n");
+ return;
+ }
+ printf("Files in directory %s:\n", dirname);
+ while ((de = readdir(dr)) != NULL) {
+ printf("%s\n", de->d_name);
+ }
+ closedir(dr);
+ }
+ void execute_command(char **args) {
+ pid_t pid = fork();
+ if (pid < 0) {
+ printf("Failed to create a new process\n");
+ } else if (pid == 0) { 
+ if (execvp(args[0], args) ==-1) {
+ perror("myshell");
+ }
+ exit(EXIT_FAILURE);
+ } else { 
+ wait(NULL);
+ }
+ }
+ int main() {
+ char command[MAX_CMD_LEN];
+ char *args[MAX_ARGS];
+ char *token;
+ int should_run = 1;
+ while (should_run) {
+ printf("myshell$ ");
+ fgets(command, MAX_CMD_LEN, stdin);
+ command[strlen(command)-1] = '\0';
+int arg_count = 0;
+ token = strtok(command, " ");
+ while (token != NULL) {
+ args[arg_count++] = token;
+ token = strtok(NULL, " ");
+ }
+ args[arg_count] = NULL;
+ if (arg_count == 0) {
+ continue; 
+ }
+ if (strcmp(args[0], "exit") == 0) {
+ should_run = 0;
+ } else if (strcmp(args[0], "list") == 0 && arg_count == 3 &&
+ strcmp(args[1], "f") == 0) {
+ list_files_in_directory(args[2]);
+ } else {
+ execute_command(args);
+ }
+ }
+ return 0;
+ }
+
+ q2]
+ #include <stdio.h>
+ int main() {
+ int n, i, time = 0, remain, flag = 0, time_quantum;
+ int waiting_time = 0, turnaround_time = 0;
+ printf("Enter the number of processes: ");
+ scanf("%d", &n);
+ int at[n], bt[n], rt[n]; 
+ for (i = 0; i < n; i++) {
+ printf("Enter arrival time and burst time for process P%d: ",
+ i+1);
+ scanf("%d %d", &at[i], &bt[i]);
+ rt[i] = bt[i];
+ }
+ printf("Enter the time quantum: ");
+ scanf("%d", &time_quantum);
+ remain=n;
+ printf("\nGantt Chart:\n");
+ while (remain != 0) {
+ for (i = 0; i < n; i++) {
+ if (rt[i] > 0 && at[i] <= time) {
+ if (rt[i] <= time_quantum) {
+ time += rt[i];
+ printf("| P%d (%d) ", i+1, time);
+ rt[i] = 0;
+ remain--;
+ waiting_time += time-at[i]-bt[i];
+ turnaround_time += time-at[i];
+ } else {
+ rt[i]-= time_quantum;
+ time += time_quantum;
+ printf("| P%d (%d) ", i+1, time);
+ }
+ }
+}
+ }
+ printf("|\n");
+ printf("\nProcess\tTurnaround Time\tWaiting Time\n");
+ for (i = 0; i < n; i++) {
+ int turn_time = (time-at[i]);
+ int wait_time = (turn_time-bt[i]);
+ printf("P%d\t%d\t\t%d\n", i+1, turn_time, wait_time);
+ }
+ printf("\nAverage Turnaround Time: %.2f", (float)turnaround_time / n);
+ printf("\nAverage Waiting Time: %.2f", (float)waiting_time / n);
+ return 0;
+ }
+ 
