@@ -1,0 +1,131 @@
+#include <stdio.h>
+ #define MAX 100
+ int findLRU(int time[], int n) {
+ int min = time[0], minIndex = 0;
+ for (int i = 1; i < n; i++) {
+ if (time[i] < min) {
+ min = time[i];
+ minIndex = i;
+ }
+ }
+ return minIndex;
+ }
+ int main() {
+ int frames[MAX], time[MAX], pages[MAX], page_faults = 0, n,
+ page_count, counter = 0;
+ printf("Enter the number of frames: ");
+ scanf("%d", &n);
+ printf("Enter the number of pages in the reference string: ");
+ scanf("%d", &page_count);
+ printf("Enter the reference string: ");
+ for (int i = 0; i < page_count; i++) {
+ scanf("%d", &pages[i]);
+ }
+for (int i = 0; i < n; i++) {
+ frames[i] =-1; // Initialize frames as empty
+ }
+ for (int i = 0; i < page_count; i++) {
+ int page = pages[i], found = 0;
+ // Check if page is already in frames
+ for (int j = 0; j < n; j++) {
+ if (frames[j] == page) {
+ found = 1;
+ time[j] = ++counter; // Update time for LRU
+ break;
+ }
+ }
+ 
+ if (!found) {
+ int index;
+ if (i < n) {
+ index = i; 
+ } else {
+ index = findLRU(time, n); 
+ }
+ frames[index] = page;
+ time[index] = ++counter;
+ page_faults++;
+ 
+ printf("Page %d loaded into frame. Current frames: ", page);
+ for (int j = 0; j < n; j++) {
+ if (frames[j] !=-1) {
+ printf("%d ", frames[j]);
+ } else {
+ printf("-");
+ }
+ }
+ printf("\n");
+ }
+}
+ printf("Total page faults: %d\n", page_faults);
+ return 0;
+ }
+ 
+ 2] #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
+ #include <sys/wait.h>
+ #include <dirent.h>
+ #define MAX_INPUT 100
+ #define MAX_ARGS 10
+ void list_files(const char *dirname) {
+ struct dirent *entry;
+ DIR *dp = opendir(dirname);
+ if (dp == NULL) return;
+ while ((entry = readdir(dp)) != NULL) {
+ if (entry->d_name[0] != '.') {
+ printf("%s\n", entry->d_name);
+ }
+ }
+ closedir(dp);
+ }
+ void list_count(const char *dirname) {
+ struct dirent *entry;
+ DIR *dp = opendir(dirname);
+ int count = 0;
+if (dp == NULL) return;
+ while ((entry = readdir(dp)) != NULL) {
+ if (entry->d_name[0] != '.') {
+ count++;
+ }
+ }
+ closedir(dp);
+ printf("%d\n", count);
+ }
+ int main() {
+ char input[MAX_INPUT];
+ char *args[MAX_ARGS];
+ char *token;
+ while (1) {
+ printf("myshell$ ");
+ fgets(input, sizeof(input), stdin);
+ input[strcspn(input, "\n")] = 0;
+ int i = 0;
+ token = strtok(input, " ");
+ while (token != NULL && i < MAX_ARGS-1) {
+ args[i++] = token;
+ token = strtok(NULL, " ");
+ }
+ args[i] = NULL;
+ if (args[0] == NULL) continue;
+ if (strcmp(args[0], "exit") == 0) break;
+ if (strcmp(args[0], "list") == 0 && args[1] && args[2]) {
+ if (strcmp(args[1], "f") == 0) {
+ list_files(args[2]);
+ } else if (strcmp(args[1], "n") == 0) {
+ list_count(args[2]);
+}
+ continue;
+ }
+ pid_t pid = fork();
+ if (pid == 0) {
+ if (execvp(args[0], args) ==-1) perror("execvp");
+ exit(EXIT_FAILURE);
+ } else if (pid > 0) {
+ wait(NULL);
+ }
+ }
+ return 0;
+ }
+ 
