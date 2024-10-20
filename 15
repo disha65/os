@@ -1,0 +1,145 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
+ #include <sys/types.h>
+ #include <sys/wait.h>
+ #include <dirent.h>
+ #define MAX_INPUT 100
+#define MAX_ARGS 10
+ void list_files(const char *dirname) {
+ struct dirent *de;
+ DIR *dr = opendir(dirname);
+ if (dr == NULL) {
+ perror("Could not open directory");
+ return;
+ }
+ while ((de = readdir(dr)) != NULL) {
+ if (de->d_type == DT_REG) {
+ printf("%s\n", de->d_name);
+ }
+ }
+ closedir(dr);
+ }
+ int main() {
+ char input[MAX_INPUT];
+ char *args[MAX_ARGS];
+ char *token;
+ while (1) {
+ printf("myshell$ ");
+ fgets(input, sizeof(input), stdin);
+ input[strcspn(input, "\n")] = 0;
+ int i = 0;
+ token = strtok(input, " ");
+ while (token != NULL && i < MAX_ARGS-1) {
+ args[i++] = token;
+ token = strtok(NULL, " ");
+ }
+ args[i] = NULL;
+ if (args[0] == NULL) continue;
+if (strcmp(args[0], "exit") == 0) {
+ break;
+ }
+ if (strcmp(args[0], "list") == 0 && strcmp(args[1], "f") == 0 &&
+ args[2] != NULL) {
+ list_files(args[2]);
+ continue;
+ }
+ pid_t pid = fork();
+ if (pid == 0) {
+ if (execvp(args[0], args) ==-1) {
+ perror("Error executing command");
+ }
+ exit(EXIT_FAILURE);
+ } else if (pid > 0) {
+ wait(NULL);
+ } else {
+ perror("Fork failed");
+ }
+ }
+ return 0;
+ }
+
+2] #include <stdio.h>
+ #include <stdlib.h>
+ typedef struct {
+ int id;
+ int arrival_time;
+ int burst_time;
+int remaining_time;
+ int waiting_time;
+ int turnaround_time;
+ } Process;
+ void find_sjf(int n, Process processes[]) {
+ int total_time = 0;
+ int completed = 0;
+ int current_time = 0;
+ int min_remaining_time, index;
+ while (completed < n) {
+ min_remaining_time = 9999;
+ index =-1;
+ for (int i = 0; i < n; i++) {
+ if (processes[i].arrival_time <= current_time &&
+ processes[i].remaining_time > 0) {
+ if (processes[i].remaining_time < min_remaining_time) {
+ min_remaining_time = processes[i].remaining_time;
+ index = i;
+ }
+ }
+ }
+ if (index !=-1) {
+ processes[index].remaining_time--;
+ current_time++;
+ if (processes[index].remaining_time == 0) {
+ processes[index].turnaround_time = current_time
+processes[index].arrival_time;
+ processes[index].waiting_time =
+ processes[index].turnaround_time-processes[index].burst_time;
+ completed++;
+ }
+ } else {
+ current_time++;
+ }
+ }
+}
+ void print_gantt_chart(int n, Process processes[]) {
+ printf("\nGantt Chart:\n|");
+ for (int i = 0; i < n; i++) {
+ printf(" P%d |", processes[i].id);
+ }
+ printf("\n");
+ }
+ int main() {
+ int n;
+ printf("Enter the number of processes: ");
+ scanf("%d", &n);
+ Process processes[n];
+ for (int i = 0; i < n; i++) {
+ processes[i].id = i + 1;
+ printf("Enter arrival time and burst time for process P%d: ", i +
+ 1);
+ scanf("%d %d", &processes[i].arrival_time,
+ &processes[i].burst_time);
+ processes[i].remaining_time = processes[i].burst_time;
+ processes[i].waiting_time = 0;
+ processes[i].turnaround_time = 0;
+ }
+ find_sjf(n, processes);
+ int total_waiting_time = 0;
+ int total_turnaround_time = 0;
+ printf("\nProcess\tArrival Time\tBurst Time\tWaiting Time\tTurnaround
+ Time\n");
+ for (int i = 0; i < n; i++) {
+ total_waiting_time += processes[i].waiting_time;
+ total_turnaround_time += processes[i].turnaround_time;
+ printf("P%d\t%d\t\t%d\t\t%d\t\t%d\n", processes[i].id,
+ processes[i].arrival_time, processes[i].burst_time,
+ processes[i].waiting_time, processes[i].turnaround_time);
+}
+ printf("\nAverage Waiting Time: %.2f", (float)total_waiting_time / n);
+ printf("\nAverage Turnaround Time: %.2f\n",
+ (float)total_turnaround_time / n);
+ print_gantt_chart(n, processes);
+ return 0;
+ }
+ 
