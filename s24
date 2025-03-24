@@ -1,0 +1,160 @@
+ #include <mpi.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+#define ARRAY_SIZE 1000
+ int main(int argc, char* argv[]) {
+    int rank, size, i;
+    int array[ARRAY_SIZE];
+    int local_sum = 0, total_sum;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    
+    srand(rank + time(NULL));
+    
+    for(i = 0; i < ARRAY_SIZE; i++) {
+        array[i] = rand() % 100;
+        if(array[i] % 2 != 0) {
+            local_sum += array[i];
+        }
+    }
+   
+    printf("Local sum for process %d is %d\n", rank, local_sum);
+  
+    MPI_Reduce(&local_sum, &total_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+   
+    if (rank == 0) {
+        printf("Total sum = %d\n", total_sum);
+    }
+   
+    MPI_Finalize();
+    return 0;
+ }
+ #include<stdio.h>
+ # define true 1
+ # define false 0
+int m,n,max[10][10],alloc[10][10],avl[10],need[10][10],finish[10],i,j;
+ void computeneed()
+ {
+ for(i=0;i<m;i++)
+  for(j=0;j<n;j++)
+   need[i][j]=max[i][j]-alloc[i][j];
+ }
+ int isfeasible(int pno)
+ {
+ int cnt=0;
+ for(j=0;j<n;j++)
+  if(need[pno][j]<=avl[j])
+   cnt++;
+ if(cnt==n)
+  return 1;
+ else
+  return 0;
+ }
+ void checksystem()
+ {
+ int ans[m],cnt=0,flag;
+ for(i=0;i<m;i++)
+ finish[i]=false;
+ while(true)
+ {
+  flag=false;
+  for(i=0;i<m;i++)
+   if(!finish[i])
+   {
+    printf("\n trying for p%d",i);
+    if(isfeasible(i))
+    {
+     flag=true;
+     printf("\n process p%d granted 
+resources\n",i);
+     finish[i]=true;
+     ans[cnt++]=i;
+     for(j=0;j<n;j++)
+      avl[j]=avl[j]+alloc[i][j];
+    }
+    else
+     printf("\nprocess p%d cannot be granted 
+resources\n",i);
+   }
+  if(flag==false)
+  break;
+ }
+ flag=true;
+ for(i=0;i<m;i++)
+  if(finish[i]==0)
+   flag=false;
+ if(flag==1)
+ {
+  printf("\nSystem is in safe state\n");
+  printf("\nSafe sequence is as follows\n");
+  for(i=0;i<cnt;i++)
+   printf("p%d\t",ans[i]);
+ }
+ else
+  printf("\nSystem is not in safe state\n");
+ }
+ void acceptdata(int x[10][10])
+ {
+ int i,j;
+ for(i=0;i<m;i++)
+ {
+  printf("p%d\n",i);
+  for(j=0;j<n;j++)
+  {
+   printf("%c:",65+j);
+   scanf("%d",&x[i][j]);
+  }
+ }
+ }
+ void acceptavailability()
+ {
+ int i;
+ for(i=0;i<n;i++)
+ {
+  printf("%c:",65+i);
+  scanf("%d",&avl[i]);
+ }
+ }
+ void displaydata()
+ {
+ int i,j;
+ printf("\n\tallocation\t\tmax\t\tneed\n");
+ printf("\t");
+ for(i=0;i<m;i++)
+ {
+  for(j=0;j<n;j++)
+   printf("%4c",65+j);
+  printf("\t");
+ }
+ for(i=0;i<m;i++)
+ {
+  printf("\n p%d\t",i);
+  for(j=0;j<n;j++)
+   printf("%4d",alloc[i][j]);
+  printf("\t");
+  for(j=0;j<n;j++)
+   printf("%4d",max[i][j]);
+  printf("\t");
+  for(j=0;j<n;j++)
+   printf("%4d",need[i][j]);
+ }
+ printf("\n available\n");
+ for(j=0;j<n;j++)
+  printf("%4d",avl[j]);
+ }
+ int main()
+ {
+ printf("\n enter the no. of processes and resources");
+ scanf("%d %d",&m,&n);
+ printf("\n enter the allocation\n");
+ acceptdata(alloc);
+ printf("\n enter the max limit\n");
+ acceptdata(max);
+ printf("\n enter the availability\n");
+ acceptavailability();
+ computeneed();
+ displaydata();
+ checksystem();
+ }
+ 
